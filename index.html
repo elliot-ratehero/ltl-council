@@ -14,6 +14,8 @@
     .badge { padding: 0.2rem 0.5rem; font-size: 0.8rem; border-radius: 4px; background: #eee; color: #333; }
     .badge.active { background: #d1e7dd; color: #0f5132; }
     .auth-box { max-width: 400px; margin: 0 auto; }
+    .legal-box { max-height: 400px; overflow-y: auto; padding: 1.5rem; border: 1px solid #e5e6e9; border-radius: 8px; background: #fff; margin-bottom: 1.5rem; font-size: 0.85rem; text-align: left; }
+    .legal-box h3 { font-size: 1rem; margin-top: 1rem; margin-bottom: 0.5rem; }
   </style>
 </head>
 <body>
@@ -21,7 +23,7 @@
     <div id="loader" class="loader"><span aria-busy="true">Authenticating...</span></div>
     
     <article id="state-login" class="hidden auth-box">
-      <header><h2>Portal Access</h2></header>
+      <header><h2>LTL AI Council Portal</h2></header>
       <form id="email-form" onsubmit="handleRequestOTP(event)">
         <label for="loginEmail">Work Email</label>
         <input type="email" id="loginEmail" required placeholder="name@company.com">
@@ -36,8 +38,51 @@
     </article>
 
     <article id="state-pledge" class="hidden">
-      <header><h2>LTL AI Council Induction</h2></header>
+      <header><h2>LTL AI Council Pledge</h2></header>
       <p>Welcome, <strong id="pledge-email"></strong>. To participate, you must execute the industry pledge.</p>
+      
+      <div class="legal-box">
+        <p>This Council Stakeholder Agreement & Pledge (“Agreement”) is entered into by and between Understand LTL (“ULTL”), a not-for-profit professional trade association, and the undersigned Council Stakeholder (“Stakeholder”), effective as of the date indicated below.</p>
+        
+        <strong>1. Eligibility</strong>
+        <p>1.1 The Stakeholder affirms and attests that they are a ULTL member in good standing at the time of executing this Agreement and throughout the period of engagement with the Council program.<br>
+        1.2 Membership in good standing means the Stakeholder has not been suspended or expelled, and they abide by ULTL’s Stakeholder pledge.</p>
+
+        <strong>2. Purpose of Engagement</strong>
+        <p>The Stakeholder requests the voluntary participation in the ULTL LTL AI Council Advisors for the limited purpose of obtaining insights, experience, and references to assist in improving transportation or supply chain practices.</p>
+
+        <strong>3. Stakeholder Commitments (Pledge)</strong>
+        <p>The Stakeholder hereby pledges that:<br>
+        3.1 Good Faith Engagement – The intent of engagement is solely to seek or provide professional assistance, not to solicit, sell, or promote products or services in the course of the Council interaction.<br>
+        3.2 No Commercial Restriction Outside Council – It is understood that no Council Advisor is prohibited from doing business directly with members outside of Council engagements; however, such business shall be conducted outside and independent of the Council program.<br>
+        3.3 Conflict of Interest Cooperation – If a Council Advisor identifies a material conflict of interest or direct competitive situation involving the Stakeholder, the Council Advisor may recuse themselves and, where feasible, ULTL may assign another qualified Advisor.<br>
+        3.4 No Monetary Compensation – The Stakeholder shall not offer, provide, or facilitate any form of direct monetary compensation, gifts, or commissions to Council Advisors for services rendered through the Council program.<br>
+        3.5 Professional Conduct – The Stakeholder will interact with Council Advisors in a professional, respectful, and collaborative manner.</p>
+
+        <strong>4. Confidentiality</strong>
+        <p>4.1 Definition – “Confidential Information” means all non-public, proprietary, or sensitive business information disclosed during the Council engagement, whether oral, written, digital, or otherwise recorded.<br>
+        4.2 Obligation – The Stakeholder agrees to maintain in strict confidence all Confidential Information shared by Council Advisors or ULTL, and to use such information exclusively for the intended advisory purpose.<br>
+        4.3 Exclusions – Confidential Information does not include information that: (i) is or becomes publicly available without breach of this Agreement; (ii) is rightfully received from a third party without restriction; or (iii) must be disclosed pursuant to legal process, provided that prompt written notice is given to ULTL before disclosure.<br>
+        4.4 Term – Confidentiality obligations commence on the Effective Date and remain in force for three (3) years after the conclusion of the Council engagement.<br>
+        4.5 Survival – This Section 4 shall survive termination or expiration of this Agreement.</p>
+
+        <strong>5. Disclaimer of Liability</strong>
+        <p>5.1 Advisory Nature – Council Advisors provide recommendations, guidance, and suggestions on a voluntary basis; such input should be considered informational only and not a substitute for the Stakeholder’s own professional judgment or independent verification.<br>
+        5.2 No Warranty – ULTL and Council Advisors make no warranties, express or implied, regarding the accuracy, completeness, or applicability of advice provided.<br>
+        5.3 Limitation of Liability – To the fullest extent permitted by law, ULTL, its officers, directors, employees, volunteers, and Council Advisors shall not be liable for any claims, damages, losses, costs, or expenses arising from or related to the Stakeholder’s reliance on Council interactions.<br>
+        5.4 Indemnification – The Stakeholder agrees to indemnify and hold harmless ULTL and Council Advisors from claims resulting from actions taken—or not taken—based on Council advice.</p>
+
+        <strong>6. Term and Termination</strong>
+        <p>This Agreement is effective on the date signed by the Stakeholder and shall remain in effect until the conclusion of the Council engagement, unless terminated earlier by ULTL. Sections 4 (Confidentiality) and 5 (Disclaimer of Liability) survive termination.</p>
+
+        <strong>7. Governing Law</strong>
+        <p>This Agreement is governed by and construed in accordance with the laws of the State of Delaware, without regard to conflict of law provisions.</p>
+
+        <strong>8. Entire Agreement</strong>
+        <p>This Agreement constitutes the entire understanding between the Stakeholder and ULTL concerning Council engagement and supersedes all prior oral or written understandings.</p>
+        <p><em>IN WITNESS WHEREOF, the Stakeholder executes this Agreement as of the date below.</em></p>
+      </div>
+
       <form onsubmit="handlePledgeSubmit(event)">
         <label for="fullName">Legal Name</label>
         <input type="text" id="fullName" required>
@@ -68,7 +113,7 @@
 
   <script>
     // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
-    const API_URL = 'https://script.google.com/macros/s/AKfycby2r_8Xvs5uogsTE8KkupQE536Y-QT2-ViiIJ3aPB_x1HxzvKAoE8VC2wPFtM-8mjg2/exec';
+    const API_URL = 'YOUR_WEB_APP_URL_HERE';
     const TOKEN_KEY = 'ltl_session_token';
     let userEmailCache = '';
 
@@ -121,11 +166,19 @@
     async function handleRequestOTP(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-email');
+      if (btn.disabled) return; 
+
       userEmailCache = document.getElementById('loginEmail').value;
-      btn.setAttribute('aria-busy', 'true'); btn.disabled = true;
+      btn.setAttribute('aria-busy', 'true'); 
+      btn.disabled = true;
+      const originalText = btn.textContent;
+      btn.textContent = "Sending...";
 
       const res = await apiCall('requestOTP', { email: userEmailCache });
-      btn.removeAttribute('aria-busy'); btn.disabled = false;
+      
+      btn.removeAttribute('aria-busy'); 
+      btn.disabled = false;
+      btn.textContent = originalText;
       
       if (res.success) {
         document.getElementById('email-form').classList.add('hidden');
@@ -136,11 +189,19 @@
     async function handleVerifyOTP(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-otp');
+      if (btn.disabled) return; 
+
       const otp = document.getElementById('loginOtp').value;
-      btn.setAttribute('aria-busy', 'true'); btn.disabled = true;
+      btn.setAttribute('aria-busy', 'true'); 
+      btn.disabled = true;
+      const originalText = btn.textContent;
+      btn.textContent = "Verifying...";
 
       const res = await apiCall('verifyOTP', { email: userEmailCache, otp });
-      btn.removeAttribute('aria-busy'); btn.disabled = false;
+      
+      btn.removeAttribute('aria-busy'); 
+      btn.disabled = false;
+      btn.textContent = originalText;
       
       if (res.success) {
         localStorage.setItem(TOKEN_KEY, res.token);
@@ -153,13 +214,22 @@
     async function handlePledgeSubmit(e) {
       e.preventDefault();
       const btn = document.getElementById('sign-btn');
-      btn.setAttribute('aria-busy', 'true'); btn.disabled = true;
+      if (btn.disabled) return; 
+
+      btn.setAttribute('aria-busy', 'true'); 
+      btn.disabled = true;
+      const originalText = btn.textContent;
+      btn.textContent = "Executing...";
       
       const fullName = document.getElementById('fullName').value;
       const token = localStorage.getItem(TOKEN_KEY);
       
       const newState = await apiCall('signPledge', { token, fullName });
-      btn.removeAttribute('aria-busy'); btn.disabled = false;
+      
+      btn.removeAttribute('aria-busy'); 
+      btn.disabled = false;
+      btn.textContent = originalText;
+      
       renderState(newState);
     }
 
