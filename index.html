@@ -125,7 +125,7 @@
     // --- 1. SUPABASE CONFIGURATION ---
     const SUPABASE_URL = 'https://wkedqgkucbrbsxbnrlgj.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_rJwyfnfLrrxlP0L3ftuubQ_5_Gf2jxh';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let currentUser = null;
     let currentProfile = null;
@@ -133,7 +133,7 @@
     // --- 2. INITIALIZATION & STATE ROUTING ---
     document.addEventListener('DOMContentLoaded', checkSession);
 
-    supabase.auth.onAuthStateChange((event, session) => {
+    supabaseClient.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
         checkSession();
       } else if (event === 'SIGNED_OUT') {
@@ -143,7 +143,7 @@
 
     async function checkSession() {
       showLoader();
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       
       if (!session) {
         renderState('login');
@@ -153,11 +153,11 @@
       currentUser = session.user;
       
       // Fetch or Create Profile
-      let { data: profile } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
+      let { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
       
       if (!profile) {
         // First time login - create profile row
-        const { data: newProfile, error } = await supabase.from('profiles').insert([
+        const { data: newProfile, error } = await supabaseClient.from('profiles').insert([
           { id: currentUser.id, email: currentUser.email, status: 'pending' }
         ]).select().single();
         profile = newProfile;
@@ -171,7 +171,7 @@
         renderState('pledge');
       } else if (profile.status === 'pending') {
         // Check if they already submitted an intake request
-        const { data: reqs } = await supabase.from('committee_requests').select('id').eq('profile_id', profile.id);
+        const { data: reqs } = await supabaseClient.from('committee_requests').select('id').eq('profile_id', profile.id);
         if (reqs && reqs.length > 0) {
           renderState('waiting');
         } else {
@@ -203,7 +203,7 @@
       const email = document.getElementById('loginEmail').value;
       
       btn.setAttribute('aria-busy', 'true');
-      const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
+      const { error } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
       btn.removeAttribute('aria-busy');
       
       if (error) alert(error.message);
@@ -211,7 +211,7 @@
     }
 
     async function signOut() {
-      await supabase.auth.signOut();
+      await supabaseClient.auth.signOut();
     }
 
     // --- 4. PLEDGE LOGIC ---
@@ -237,7 +237,7 @@
       const version = role === 'advisor' ? 'advisor_v1' : 'stakeholder_v1';
 
       btn.setAttribute('aria-busy', 'true');
-      const { error } = await supabase.from('profiles').update({
+      const { error } = await supabaseClient.from('profiles').update({
         full_name: fullName,
         role: role,
         pledge_version: version
@@ -250,7 +250,7 @@
 
     // --- 5. INTAKE REQUEST LOGIC ---
     async function loadCommitteesForIntake() {
-      const { data } = await supabase.from('committees').select('id, title').eq('status', 'Active');
+      const { data } = await supabaseClient.from('committees').select('id, title').eq('status', 'Active');
       const select = document.getElementById('committee-select');
       if (data && data.length > 0) {
         select.innerHTML = '<option value="" disabled selected>Select a Committee...</option>' + 
@@ -288,7 +288,7 @@
         payload.message = `PROPOSED TITLE: ${title}\nFOCUS AREA: ${focus}\n\nABSTRACT:\n${abstract}`;
       }
 
-      const { error } = await supabase.from('committee_requests').insert([payload]);
+      const { error } = await supabaseClient.from('committee_requests').insert([payload]);
       btn.removeAttribute('aria-busy');
 
       if (error) alert("Submission failed: " + error.message);
@@ -298,7 +298,7 @@
     // --- 6. DASHBOARD LOGIC ---
     async function loadDashboard() {
       const container = document.getElementById('committee-list');
-      const { data, error } = await supabase.from('committees').select('*, profiles(full_name)').eq('status', 'Active');
+      const { data, error } = await supabaseClient.from('committees').select('*, profiles(full_name)').eq('status', 'Active');
       
       if (error) { container.innerHTML = `<p>Error loading committees.</p>`; return; }
       if (!data || data.length === 0) { container.innerHTML = `<p>No active committees at this time.</p>`; return; }
