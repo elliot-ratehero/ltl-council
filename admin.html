@@ -73,10 +73,10 @@
     // PASTE YOUR NEW SUPABASE COUNCIL CREDENTIALS HERE
     const SUPABASE_URL = 'YOUR_SUPABASE_URL';
     const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function checkAdmin() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) return window.location.replace('/login.html'); // Redirect if not logged in
 
       const { data: profile } = await supabase
@@ -147,10 +147,10 @@
       if (!confirm("Approve this user and grant them Stakeholder access?")) return;
       
       // 1. Update the request status
-      await supabase.from('committee_requests').update({ status: 'approved' }).eq('id', requestId);
+      await supabaseClient.from('committee_requests').update({ status: 'approved' }).eq('id', requestId);
       
       // 2. Upgrade the user's profile role from 'pending' to 'stakeholder'
-      await supabase.from('profiles').update({ role: 'stakeholder', status: 'approved' }).eq('id', profileId);
+      await supabaseClient.from('profiles').update({ role: 'stakeholder', status: 'approved' }).eq('id', profileId);
       
       // 3. (Optional) Insert them into committee_members if they requested to join an existing one
       
@@ -162,7 +162,7 @@
       const reason = prompt("Enter reason for rejection (this will be logged):");
       if (reason === null) return;
 
-      await supabase.from('committee_requests').update({ 
+      await supabaseClient.from('committee_requests').update({ 
         status: 'rejected',
         reason_code: reason 
       }).eq('id', requestId);
@@ -171,7 +171,7 @@
     }
 
     async function signOut() {
-      await supabase.auth.signOut();
+      await supabaseClient.auth.signOut();
       window.location.reload();
     }
 
