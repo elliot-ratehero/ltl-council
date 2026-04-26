@@ -125,7 +125,7 @@
     // --- 1. SUPABASE CONFIGURATION ---
     const SUPABASE_URL = 'https://wkedqgkucbrbsxbnrlgj.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_rJwyfnfLrrxlP0L3ftuubQ_5_Gf2jxh';
-    const supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let currentUser = null;
     let currentProfile = null;
