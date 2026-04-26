@@ -1,82 +1,185 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>LTL AI Council | Portal</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { padding: 2rem 0; background-color: #f8f9fa; }
-    .container { max-width: 800px; }
-    .loader { margin: 2rem auto; text-align: center; }
+    :root {
+      --bg-base: #050505;
+      --bg-surface: rgba(20, 20, 25, 0.6);
+      --accent-cyan: #00f0ff;
+      --accent-purple: #7000ff;
+      --text-primary: #e2e8f0;
+      --text-muted: #94a3b8;
+      --border-glass: rgba(255, 255, 255, 0.1);
+      --radius-sm: 4px;
+      --radius-md: 8px;
+    }
+
+    * { box-sizing: border-box; }
+    
+    body { 
+      margin: 0; padding: 2rem 1rem; 
+      background-color: var(--bg-base); 
+      color: var(--text-primary); 
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background-image: radial-gradient(circle at 50% -20%, rgba(112, 0, 255, 0.15), transparent 60%);
+    }
+
+    h1, h2, h3, h4, h5, h6 { font-family: 'Space Grotesk', sans-serif; margin-top: 0; font-weight: 700; }
+    h2 { font-size: 1.8rem; color: #fff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.5rem; }
+    
+    .container { max-width: 800px; margin: 0 auto; }
+    
     .hidden { display: none !important; }
-    .committee-card { margin-bottom: 1rem; border: 1px solid #ddd; padding: 1.5rem; border-radius: 8px; background: white;}
-    .badge { padding: 0.2rem 0.5rem; font-size: 0.8rem; border-radius: 4px; background: #eee; color: #333; font-weight: bold; }
-    .badge.active { background: #d1e7dd; color: #0f5132; }
-    .badge.pending { background: #fff3cd; color: #856404; }
-    .auth-box { max-width: 400px; margin: 0 auto; text-align: center; }
-    .legal-box { max-height: 300px; overflow-y: auto; padding: 1.5rem; border: 1px solid #e5e6e9; border-radius: 8px; background: #fff; margin-bottom: 1.5rem; font-size: 0.85rem; text-align: left; }
-    .nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #ddd; }
+
+    /* Glassmorphism Panels */
+    .glass-panel {
+      background: var(--bg-surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-md);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Forms & Inputs */
+    label { display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    input, select, textarea {
+      width: 100%; padding: 12px; margin-bottom: 1.5rem;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent-cyan); box-shadow: 0 0 8px rgba(0, 240, 255, 0.2); }
+    select option { background: var(--bg-base); color: var(--text-primary); }
+
+    /* Buttons */
+    button {
+      width: 100%;
+      background: transparent;
+      color: var(--accent-cyan);
+      border: 1px solid var(--accent-cyan);
+      border-radius: var(--radius-sm);
+      padding: 12px 24px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    button:hover { background: rgba(0, 240, 255, 0.1); box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+    button.secondary { color: var(--text-primary); border-color: var(--border-glass); }
+    button.secondary:hover { border-color: var(--text-primary); box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); background: rgba(255,255,255,0.05); }
+
+    /* Badges & Mono */
+    .badge {
+      font-family: 'JetBrains Mono', monospace;
+      padding: 4px 8px; font-size: 0.75rem; font-weight: 700;
+      border-radius: var(--radius-sm);
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-glass); color: var(--text-muted);
+    }
+    .badge.active { background: rgba(0, 240, 255, 0.1); border-color: var(--accent-cyan); color: var(--accent-cyan); }
+    .badge.purple { background: rgba(112, 0, 255, 0.1); border-color: var(--accent-purple); color: #b07cff; }
+
+    /* Specific Components */
+    .auth-box { max-width: 450px; margin: 4rem auto; text-align: center; }
+    .legal-box { 
+      max-height: 250px; overflow-y: auto; padding: 1.5rem; 
+      background: rgba(0,0,0,0.5); border: 1px solid var(--border-glass); 
+      border-radius: var(--radius-sm); margin-bottom: 1.5rem; 
+      font-size: 0.85rem; text-align: left; line-height: 1.6; color: var(--text-muted);
+    }
+    .legal-box strong { color: #fff; }
+    .committee-card { 
+      border: 1px solid var(--border-glass); padding: 1.5rem; 
+      border-radius: var(--radius-md); background: rgba(0,0,0,0.3); 
+      margin-bottom: 1rem; transition: border-color 0.3s;
+    }
+    .committee-card:hover { border-color: var(--accent-purple); }
+    .nav-bar { 
+      display: flex; justify-content: space-between; align-items: center; 
+      margin-bottom: 3rem; padding-bottom: 1.5rem; 
+      border-bottom: 1px solid transparent; 
+      border-image: linear-gradient(to right, transparent, var(--border-glass), transparent) 1;
+    }
+    .nav-brand { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.2rem; letter-spacing: 1px; color: #fff; }
+    .loader { text-align: center; margin: 4rem 0; font-family: 'JetBrains Mono', monospace; color: var(--accent-cyan); animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
   </style>
 </head>
 <body>
   <main class="container">
-    <div id="loader" class="loader"><span aria-busy="true">Authenticating...</span></div>
+    <div id="loader" class="loader">[ SYSTEM.AUTHENTICATING... ]</div>
     
-    <article id="state-login" class="hidden auth-box">
-      <header><h2>LTL AI Council Portal</h2></header>
-      <p>Enter your work email to receive a secure login link.</p>
+    <article id="state-login" class="hidden auth-box glass-panel">
+      <h2>LTL AI Council</h2>
+      <p style="color: var(--text-muted); margin-bottom: 2rem;">Initiate secure session sequence.</p>
       <form onsubmit="handleMagicLink(event)">
-        <input type="email" id="loginEmail" required placeholder="name@company.com">
-        <button type="submit" id="btn-login">Send Magic Link</button>
+        <input type="email" id="loginEmail" required placeholder="sys.admin@company.com">
+        <button type="submit" id="btn-login">Execute Login Protocol</button>
       </form>
     </article>
 
-    <article id="state-pledge" class="hidden">
-      <header><h2>Council Pledge & Execution</h2></header>
-      <p>Welcome, <strong id="pledge-email"></strong>. Please execute the appropriate industry pledge to proceed.</p>
+    <article id="state-pledge" class="hidden glass-panel">
+      <h2>Council Pledge Execution</h2>
+      <p style="color: var(--text-muted);">IDENTITY: <strong id="pledge-email" style="color: #fff; font-family: 'JetBrains Mono', monospace;"></strong></p>
       
-      <label for="role-select">I am applying to be an:</label>
+      <label for="role-select">Declare Authorization Level</label>
       <select id="role-select" onchange="togglePledgeText()">
-        <option value="" disabled selected>Select Role...</option>
-        <option value="advisor">Advisor (Board Member)</option>
-        <option value="stakeholder">General Stakeholder</option>
+        <option value="" disabled selected>Select Designation...</option>
+        <option value="advisor">Advisor [Board Protocol]</option>
+        <option value="stakeholder">General Stakeholder [Standard Access]</option>
       </select>
 
       <div id="legal-container" class="hidden">
         <div class="legal-box" id="legal-text"></div>
         <form onsubmit="handlePledgeSubmit(event)">
-          <label for="fullName">Legal Name</label>
-          <input type="text" id="fullName" required placeholder="Type your full legal name to sign">
-          <button type="submit" id="sign-btn">Sign & Execute Pledge</button>
+          <label for="fullName">Cryptographic Signature (Legal Name)</label>
+          <input type="text" id="fullName" required placeholder="Type your full legal name to execute">
+          <button type="submit" id="sign-btn">Sign & Execute Contract</button>
         </form>
       </div>
     </article>
 
-    <article id="state-intake" class="hidden">
-      <header><h2>Council Intake Form</h2></header>
-      <p>Thank you for executing the pledge. Before your account is approved, please indicate how you would like to participate.</p>
+    <article id="state-intake" class="hidden glass-panel">
+      <h2>Network Intake Routing</h2>
+      <p style="color: var(--text-muted); margin-bottom: 2rem;">Pledge executed. Define your network participation parameters.</p>
       
       <form onsubmit="handleIntakeSubmit(event)">
         <label for="request-type">Participation Intent</label>
         <select id="request-type" onchange="toggleIntakeFields()" required>
-          <option value="" disabled selected>Select Intent...</option>
-          <option value="join_existing">I want to join an existing committee</option>
-          <option value="lead_new">I want to apply to lead a NEW committee</option>
+          <option value="" disabled selected>Select Intent Parameter...</option>
+          <option value="join_existing">Attach to Active Committee</option>
+          <option value="lead_new">Deploy New Committee Protocol</option>
         </select>
 
-        <div id="join-fields" class="hidden">
-          <label for="committee-select">Select Committee</label>
+        <div id="join-fields" class="hidden" style="margin-top: 1.5rem;">
+          <label for="committee-select">Target Node (Committee)</label>
           <select id="committee-select">
-            <option value="">Loading active committees...</option>
+            <option value="">Querying active nodes...</option>
           </select>
-          <label>Message for the Chair (Optional)</label>
-          <textarea id="join-message" placeholder="Briefly state your qualifications or reason for joining."></textarea>
+          <label>Payload (Optional Message for Chair)</label>
+          <textarea id="join-message" rows="3" placeholder="Briefly state qualifications."></textarea>
         </div>
 
-        <div id="lead-fields" class="hidden">
-          <label for="focus-area">Focus Area</label>
+        <div id="lead-fields" class="hidden" style="margin-top: 1.5rem;">
+          <label for="focus-area">Sector Focus</label>
           <select id="focus-area">
             <option value="" disabled selected>Select an area...</option>
             <option value="Education">Education</option>
@@ -87,36 +190,35 @@
             <option value="Legislative">Legislative</option>
             <option value="Legal">Legal</option>
           </select>
-          <label>Proposed Committee Title</label>
-          <input type="text" id="new-committee-title" placeholder="e.g., AI Data Sharing Standards">
-          <label>Abstract & Objectives (approx 300 words)</label>
-          <textarea id="lead-abstract" rows="6" placeholder="Define the challenge, what you want to discover, and what success looks like."></textarea>
+          <label>Proposed Designation (Title)</label>
+          <input type="text" id="new-committee-title" placeholder="e.g., Data Interchange Standards">
+          <label>Abstract (Objective Parameters)</label>
+          <textarea id="lead-abstract" rows="5" placeholder="Define the challenge and success criteria."></textarea>
         </div>
 
-        <button type="submit" id="intake-btn" class="hidden" style="margin-top: 1rem;">Submit Application</button>
+        <button type="submit" id="intake-btn" class="hidden" style="margin-top: 1rem;">Transmit Application</button>
       </form>
     </article>
 
-    <article id="state-waiting" class="hidden">
-      <header><h2>Application Under Review</h2></header>
-      <p>Your pledge and participation request have been received and are currently under review by the Advisory Board.</p>
-      <p>You will be notified once your stakeholder status is approved.</p>
-      <button class="secondary outline" onclick="signOut()">Sign Out</button>
+    <article id="state-waiting" class="hidden auth-box glass-panel">
+      <h2 style="color: var(--accent-cyan);">AWAITING CLEARANCE</h2>
+      <p style="color: var(--text-muted); line-height: 1.6;">Your node attachment request is currently queued. System access will be granted upon Advisory Board verification.</p>
+      <button class="secondary" onclick="signOut()" style="margin-top: 2rem; width: auto;">Terminate Session</button>
     </article>
 
     <div id="state-dashboard" class="hidden">
       <div class="nav-bar">
-        <div><strong>LTL AI Council Portal</strong></div>
-        <div style="display:flex; gap:10px; align-items:center;">
-          <span id="welcome-msg"></span>
-          <button class="secondary outline" style="margin:0; padding: 0.2rem 1rem;" onclick="signOut()">Log Out</button>
+        <div class="nav-brand">LTL AI COUNCIL</div>
+        <div style="display:flex; gap:15px; align-items:center;">
+          <span id="welcome-msg" style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-muted);"></span>
+          <button class="secondary" style="padding: 6px 12px; font-size: 0.8rem; width: auto;" onclick="signOut()">DISCONNECT</button>
         </div>
       </div>
       
       <section>
-        <h3>Active Committees</h3>
-        <p><small>Committees currently exploring LTL AI applications.</small></p>
-        <div id="committee-list"><span aria-busy="true">Loading securely...</span></div>
+        <h3 style="color: #fff; margin-bottom: 0.5rem;">Active Nodes [Committees]</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">Entities currently processing LTL AI applications.</p>
+        <div id="committee-list"><div class="loader">[ FETCHING.DATA... ]</div></div>
       </section>
     </div>
   </main>
@@ -134,57 +236,39 @@
     document.addEventListener('DOMContentLoaded', checkSession);
 
     supabaseClient.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-        checkSession();
-      } else if (event === 'SIGNED_OUT') {
-        renderState('login');
-      }
+      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') checkSession();
+      else if (event === 'SIGNED_OUT') renderState('login');
     });
 
     async function checkSession() {
       showLoader();
       const { data: { session } } = await supabaseClient.auth.getSession();
       
-      if (!session) {
-        renderState('login');
-        return;
-      }
-
+      if (!session) { renderState('login'); return; }
       currentUser = session.user;
       
-      // Fetch or Create Profile
       let { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
       
       if (!profile) {
-        // First time login - create profile row
-        const { data: newProfile, error } = await supabaseClient.from('profiles').insert([
+        const { data: newProfile } = await supabaseClient.from('profiles').insert([
           { id: currentUser.id, email: currentUser.email, status: 'pending' }
         ]).select().single();
         profile = newProfile;
       }
-
       currentProfile = profile;
 
-      // Routing Logic
       if (!profile.pledge_version) {
         document.getElementById('pledge-email').textContent = profile.email;
         renderState('pledge');
       } else if (profile.status === 'pending') {
-        // Check if they already submitted an intake request
         const { data: reqs } = await supabaseClient.from('committee_requests').select('id').eq('profile_id', profile.id);
-        if (reqs && reqs.length > 0) {
-          renderState('waiting');
-        } else {
-          loadCommitteesForIntake();
-          renderState('intake');
-        }
+        if (reqs && reqs.length > 0) renderState('waiting');
+        else { loadCommitteesForIntake(); renderState('intake'); }
       } else if (profile.status === 'approved') {
-        document.getElementById('welcome-msg').textContent = profile.full_name;
-        loadDashboard();
-        renderState('dashboard');
+        document.getElementById('welcome-msg').textContent = `USR:${profile.full_name.toUpperCase()}`;
+        loadDashboard(); renderState('dashboard');
       } else {
-        alert("Your account has been rejected or suspended.");
-        signOut();
+        alert("ACCESS DENIED: Account suspended."); signOut();
       }
     }
 
@@ -202,17 +286,14 @@
       const btn = document.getElementById('btn-login');
       const email = document.getElementById('loginEmail').value;
       
-      btn.setAttribute('aria-busy', 'true');
+      btn.innerText = "TRANSMITTING..."; btn.disabled = true;
       const { error } = await supabaseClient.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
-      btn.removeAttribute('aria-busy');
+      btn.innerText = "Execute Login Protocol"; btn.disabled = false;
       
       if (error) alert(error.message);
-      else alert("Magic link sent! Check your email to log in.");
+      else alert("Auth token dispatched. Check your inbox.");
     }
-
-    async function signOut() {
-      await supabaseClient.auth.signOut();
-    }
+    async function signOut() { await supabaseClient.auth.signOut(); }
 
     // --- 4. PLEDGE LOGIC ---
     const advisorPledge = `<strong>ULTL - LTL AI Council Advisor Pledge</strong><br><br>... [Abbreviated for UI] ... The Advisor agrees to serve as a resource to ULTL member Stakeholders with the goal of sharing industry insights and best practices to help improve members' transportation, logistics, or supply chain performance - not to solicit business, sell products, or advance their own corporate objectives during Council engagements.`;
@@ -224,7 +305,6 @@
       const textDiv = document.getElementById('legal-text');
       
       if (!role) { container.classList.add('hidden'); return; }
-      
       textDiv.innerHTML = role === 'advisor' ? advisorPledge : stakeholderPledge;
       container.classList.remove('hidden');
     }
@@ -234,18 +314,15 @@
       const btn = document.getElementById('sign-btn');
       const fullName = document.getElementById('fullName').value;
       const role = document.getElementById('role-select').value;
-      const version = role === 'advisor' ? 'advisor_v1' : 'stakeholder_v1';
-
-      btn.setAttribute('aria-busy', 'true');
+      
+      btn.innerText = "EXECUTING..."; btn.disabled = true;
       const { error } = await supabaseClient.from('profiles').update({
-        full_name: fullName,
-        role: role,
-        pledge_version: version
+        full_name: fullName, role: role, pledge_version: role === 'advisor' ? 'advisor_v1' : 'stakeholder_v1'
       }).eq('id', currentUser.id);
       
-      btn.removeAttribute('aria-busy');
-      if (error) alert("Error executing pledge: " + error.message);
-      else checkSession(); // Re-route to intake
+      btn.innerText = "Sign & Execute Contract"; btn.disabled = false;
+      if (error) alert("Execution failed: " + error.message);
+      else checkSession(); 
     }
 
     // --- 5. INTAKE REQUEST LOGIC ---
@@ -253,11 +330,8 @@
       const { data } = await supabaseClient.from('committees').select('id, title').eq('status', 'Active');
       const select = document.getElementById('committee-select');
       if (data && data.length > 0) {
-        select.innerHTML = '<option value="" disabled selected>Select a Committee...</option>' + 
-                           data.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
-      } else {
-        select.innerHTML = '<option value="">No active committees available to join.</option>';
-      }
+        select.innerHTML = '<option value="" disabled selected>Select a Node...</option>' + data.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+      } else select.innerHTML = '<option value="">No active nodes available.</option>';
     }
 
     function toggleIntakeFields() {
@@ -265,7 +339,6 @@
       document.getElementById('join-fields').classList.add('hidden');
       document.getElementById('lead-fields').classList.add('hidden');
       document.getElementById('intake-btn').classList.remove('hidden');
-
       if (type === 'join_existing') document.getElementById('join-fields').classList.remove('hidden');
       if (type === 'lead_new') document.getElementById('lead-fields').classList.remove('hidden');
     }
@@ -274,25 +347,21 @@
       e.preventDefault();
       const type = document.getElementById('request-type').value;
       const btn = document.getElementById('intake-btn');
-      btn.setAttribute('aria-busy', 'true');
+      btn.innerText = "TRANSMITTING..."; btn.disabled = true;
 
       let payload = { profile_id: currentUser.id, request_type: type, status: 'pending' };
-
       if (type === 'join_existing') {
         payload.committee_id = document.getElementById('committee-select').value;
         payload.message = document.getElementById('join-message').value;
-      } else if (type === 'lead_new') {
-        const title = document.getElementById('new-committee-title').value;
-        const focus = document.getElementById('focus-area').value;
-        const abstract = document.getElementById('lead-abstract').value;
-        payload.message = `PROPOSED TITLE: ${title}\nFOCUS AREA: ${focus}\n\nABSTRACT:\n${abstract}`;
+      } else {
+        payload.message = `PROPOSED TITLE: ${document.getElementById('new-committee-title').value}\nFOCUS AREA: ${document.getElementById('focus-area').value}\n\nABSTRACT:\n${document.getElementById('lead-abstract').value}`;
       }
 
       const { error } = await supabaseClient.from('committee_requests').insert([payload]);
-      btn.removeAttribute('aria-busy');
+      btn.innerText = "Transmit Application"; btn.disabled = false;
 
-      if (error) alert("Submission failed: " + error.message);
-      else checkSession(); // Re-route to waiting room
+      if (error) alert("Transmission failed: " + error.message);
+      else checkSession(); 
     }
 
     // --- 6. DASHBOARD LOGIC ---
@@ -300,17 +369,22 @@
       const container = document.getElementById('committee-list');
       const { data, error } = await supabaseClient.from('committees').select('*, profiles(full_name)').eq('status', 'Active');
       
-      if (error) { container.innerHTML = `<p>Error loading committees.</p>`; return; }
-      if (!data || data.length === 0) { container.innerHTML = `<p>No active committees at this time.</p>`; return; }
+      if (error) { container.innerHTML = `<p>Error retrieving nodes.</p>`; return; }
+      if (!data || data.length === 0) { container.innerHTML = `<p style="color:var(--text-muted); font-family:'JetBrains Mono', monospace;">[0] ACTIVE NODES FOUND.</p>`; return; }
 
       container.innerHTML = data.map(comm => `
         <div class="committee-card">
-          <div style="display:flex; justify-content:space-between;">
-            <h4 style="margin:0;">${comm.title} <span class="badge active">Active</span></h4>
-            <span class="badge" style="background:#e0e7ff; color:#3730a3;">${comm.focus_area}</span>
+          <div style="display:flex; justify-content:space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <h4 style="margin:0; color:#fff; font-size:1.1rem;">${comm.title}</h4>
+            <div style="display:flex; gap:8px;">
+              <span class="badge purple">${comm.focus_area}</span>
+              <span class="badge active">SYS.ACTIVE</span>
+            </div>
           </div>
-          <p style="margin-top:0.5rem; font-size:0.85rem; color:#666;"><strong>Chair:</strong> ${comm.profiles?.full_name || 'TBD'}</p>
-          <p style="font-size:0.9rem; line-height:1.5;">${comm.abstract || 'No abstract provided.'}</p>
+          <p style="font-family:'JetBrains Mono', monospace; font-size:0.75rem; color:var(--text-muted); margin-bottom:0.5rem; text-transform:uppercase;">
+            LEAD: ${comm.profiles?.full_name || 'TBD'}
+          </p>
+          <p style="font-size:0.9rem; line-height:1.6; color:var(--text-primary);">${comm.abstract || 'No parameters provided.'}</p>
         </div>
       `).join('');
     }
